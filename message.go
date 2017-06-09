@@ -20,15 +20,42 @@ const (
 // IncomingMessages list of messages send from a Buttplug server.
 type IncomingMessages []IncomingMessage
 
+// OutgoingMessages list of messages send to a Buttplug server.
+type OutgoingMessages []OutgoingMessage
+
 // IncomingMessage contains all messages a Buttplug server can send.
 type IncomingMessage struct {
-	Ok            *Empty      `json:"Ok,omitempty"`
-	Error         *Error      `json:"Error,omitempty"`
-	Log           *Log        `json:"Log,omitempty"`
-	ServerInfo    *ServerInfo `json:"ServerInfo,omitempty"`
+	Ok    *Empty `json:"Ok,omitempty"`
+	Error *Error `json:"Error,omitempty"`
+	Log   *Log   `json:"Log,omitempty"`
+
+	ServerInfo       *ServerInfo `json:"ServerInfo,omitempty"`
+	ScanningFinished *Empty      `json:"ScanningFinished,omitempty"`
+
 	DeviceList    *DeviceList `json:"DeviceList,omitempty"`
 	DeviceAdded   *Device     `json:"DeviceAdded,omitempty"`
 	DeviceRemoved *Device     `json:"DeviceRemoved,omitempty"`
+}
+
+// OutgoingMessage contains all messages a Buttplug server can receive.
+type OutgoingMessage struct {
+	Ping       *Empty      `json:"Ping,omitempty"`
+	RequestLog *RequestLog `json:"RequestLog,omitempty"`
+
+	RequestServerInfo *RequestServerInfo `json:"RequestServerInfo,omitempty"`
+
+	StartScanning     *Empty `json:"StartScanning,omitempty"`
+	StopScanning      *Empty `json:"StopScanning,omitempty"`
+	RequestDeviceList *Empty `json:"RequestDeviceList,omitempty"`
+
+	StopDeviceCmd  *Device `json:"StopDeviceCmd,omitempty"`
+	StopAllDevices *Empty  `json:"StopAllDevices,omitempty"`
+
+	RawCmd                  *RawCmd                  `json:"RawCmd,omitempty"`
+	SingleMotorVibrateCmd   *SingleMotorVibrateCmd   `json:"SingleMotorVibrateCmd,omitempty"`
+	KiirooCmd               *KiirooCmd               `json:"KiirooCmd,omitempty"`
+	FleshlightLaunchFW12Cmd *FleshlightLaunchFW12Cmd `json:"FleshlightLaunchFW12Cmd,omitempty"`
+	LovenseCmd              *LovenseCmd              `json:"LovenseCmd,omitempty"`
 }
 
 // Empty message is used for all request and responses without additional
@@ -104,7 +131,7 @@ type Device struct {
 	// Index used to identify the device when sending Device Messages.
 	DeviceIndex uint32
 	// Type names of Device Messages that the device will accept.
-	DeviceMessages []string
+	DeviceMessages []string `json:"DeviceMessages,omitempty"`
 }
 
 // RawCmd used to send a raw byte string to a device.
