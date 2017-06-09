@@ -1,0 +1,166 @@
+package golibplug
+
+const (
+	// LogLevelOff ...
+	LogLevelOff = "Off"
+	// LogLevelFatal ...
+	LogLevelFatal = "Fatal"
+	// LogLevelError ...
+	LogLevelError = "Error"
+	// LogLevelWarn ...
+	LogLevelWarn = "Warn"
+	// LogLevelInfo ...
+	LogLevelInfo = "Info"
+	// LogLevelDebug ...
+	LogLevelDebug = "Debug"
+	// LogLevelTrace ...
+	LogLevelTrace = "Trace"
+)
+
+// IncomingMessages list of messages send from a Buttplug server.
+type IncomingMessages []IncomingMessage
+
+// IncomingMessage contains all messages a Buttplug server can send.
+type IncomingMessage struct {
+	Ok            *Empty      `json:"Ok,omitempty"`
+	Error         *Error      `json:"Error,omitempty"`
+	Log           *Log        `json:"Log,omitempty"`
+	ServerInfo    *ServerInfo `json:"ServerInfo,omitempty"`
+	DeviceList    *DeviceList `json:"DeviceList,omitempty"`
+	DeviceAdded   *Device     `json:"DeviceAdded,omitempty"`
+	DeviceRemoved *Device     `json:"DeviceRemoved,omitempty"`
+}
+
+// Empty message is used for all request and responses without additional
+// properties.
+type Empty struct {
+	// The ID the message.
+	ID uint32 `json:"Id"`
+}
+
+// Error signifies that the previous message sent by the client caused
+// some sort of parsing or processing error on the server.
+type Error struct {
+	// The ID of the client message that this reply is in response to.
+	ID uint32 `json:"Id"`
+	// Message describing the error that happened on the server.
+	ErrorMessage string
+}
+
+// RequestLog requests that the server send internal log messages.
+type RequestLog struct {
+	// Message ID.
+	ID uint32 `json:"Id"`
+	// The highest level of message to receive.
+	LogLevel string
+}
+
+// Log message from the server.
+type Log struct {
+	// Message ID.
+	ID uint32 `json:"Id"`
+	// The level of the log message.
+	LogLevel string
+	// Message
+	LogMessage string
+}
+
+// RequestServerInfo register with the server, and request info from the
+// server.
+type RequestServerInfo struct {
+	// The ID of the client message that this reply is in response to.
+	ID uint32 `json:"Id"`
+	// Name of the client, for the server to use for UI if needed.
+	ClientName string
+}
+
+// ServerInfo contains information about the server name (optional), template
+// version, and ping time expectations.
+type ServerInfo struct {
+	// The ID of the client message that this reply is in response to.
+	ID uint32 `json:"Id"`
+	// Name of the server.
+	ServerName string
+	// Semantic version for the message template the server uses.
+	MessageVersion string
+	// Maximum internal for pings from the client, in milliseconds.
+	MaxPingTime uint32
+}
+
+// DeviceList is a server reply to a client request for a device list.
+type DeviceList struct {
+	// The ID of the client message that this reply is in response to.
+	ID uint32 `json:"Id"`
+	// Array of device objects
+	Devices []Device
+}
+
+// Device ...
+type Device struct {
+	// Message ID (not used when received in a device list.)
+	ID uint32 `json:"Id,omitempty"`
+	// Descriptive name of the device.
+	DeviceName string
+	// Index used to identify the device when sending Device Messages.
+	DeviceIndex uint32
+	// Type names of Device Messages that the device will accept.
+	DeviceMessages []string
+}
+
+// RawCmd used to send a raw byte string to a device.
+type RawCmd struct {
+	// Message ID.
+	ID uint32 `json:"Id"`
+	// Index used to identify the device.
+	DeviceIndex uint32
+	// Command to execute.
+	Command []byte
+}
+
+// SingleMotorVibrateCmd causes a toy that supports vibration to run at a
+// certain speed.
+type SingleMotorVibrateCmd struct {
+	// Message ID.
+	ID uint32 `json:"Id"`
+	// Index used to identify the device.
+	DeviceIndex uint32
+	// Vibration speed, with a range of [0.0-1.0]
+	Speed float64
+}
+
+// KiirooCmd causes a toy that supports Kiiroo style commands to run whatever
+// event may be related.
+type KiirooCmd struct {
+	// Message ID.
+	ID uint32 `json:"Id"`
+	// Index used to identify the device.
+	DeviceIndex uint32
+	// Command (range [0-4])
+	Command int
+}
+
+// FleshlightLaunchFW12Cmd causes a toy that supports Fleshlight Launch
+// (Firmware Version 1.2) style commands to run whatever event may be related.
+type FleshlightLaunchFW12Cmd struct {
+	// Message ID.
+	ID uint32 `json:"Id"`
+	// Index used to identify the device.
+	DeviceIndex uint32
+	// Position to move to, range 0-99.
+	Position int
+	// Speed to move at, range 0-99.
+	Speed int
+}
+
+// LovenseCmd causes a toy that supports Lovense style commands to run whatever
+// event may be related.
+type LovenseCmd struct {
+	// Message ID.
+	ID uint32 `json:"Id"`
+	// Index used to identify the device.
+	DeviceIndex uint32
+	// Command for Lovense toys. Must be a valid Lovense command accessible
+	// on most of their toys. Implementations should check this for
+	// validity.
+	Command string
+}
