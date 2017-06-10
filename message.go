@@ -108,8 +108,14 @@ type ServerInfo struct {
 	ID uint32 `json:"Id"`
 	// Name of the server.
 	ServerName string
-	// Semantic version for the message template the server uses.
-	MessageVersion string
+	// Message template version of the server software.
+	MessageVersion uint32
+	// Major version of the server software.
+	MajorVersion uint32
+	// Minor version of the server software.
+	MinorVersion uint32
+	// Build version of the server software.
+	BuildVersion uint32
 	// Maximum internal for pings from the client, in milliseconds.
 	MaxPingTime uint32
 }

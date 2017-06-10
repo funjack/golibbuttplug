@@ -82,7 +82,10 @@ var IncomingJSONCases = []MarshalJSONIncoming{
     "ServerInfo": {
       "Id": 1,
       "ServerName": "Test Server",
-      "MessageVersion": "0.0.1",
+      "MessageVersion": 1,
+      "MajorVersion": 1,
+      "MinorVersion": 0,
+      "BuildVersion": 0,
       "MaxPingTime": 100
     }
   }
@@ -92,7 +95,10 @@ var IncomingJSONCases = []MarshalJSONIncoming{
 				ServerInfo: &ServerInfo{
 					ID:             1,
 					ServerName:     "Test Server",
-					MessageVersion: "0.0.1",
+					MessageVersion: 1,
+					MajorVersion:   1,
+					MinorVersion:   0,
+					BuildVersion:   0,
 					MaxPingTime:    100,
 				},
 			},
