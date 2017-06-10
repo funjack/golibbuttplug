@@ -27,6 +27,7 @@ type OutgoingMessages []OutgoingMessage
 type IncomingMessage struct {
 	Ok    *Empty `json:"Ok,omitempty"`
 	Error *Error `json:"Error,omitempty"`
+	Test  *Test  `json:"Test,omitempty"`
 	Log   *Log   `json:"Log,omitempty"`
 
 	ServerInfo       *ServerInfo `json:"ServerInfo,omitempty"`
@@ -40,6 +41,7 @@ type IncomingMessage struct {
 // OutgoingMessage contains all messages a Buttplug server can receive.
 type OutgoingMessage struct {
 	Ping       *Empty      `json:"Ping,omitempty"`
+	Test       *Test       `json:"Test,omitempty"`
 	RequestLog *RequestLog `json:"RequestLog,omitempty"`
 
 	RequestServerInfo *RequestServerInfo `json:"RequestServerInfo,omitempty"`
@@ -72,6 +74,17 @@ type Error struct {
 	ID uint32 `json:"Id"`
 	// Message describing the error that happened on the server.
 	ErrorMessage string
+}
+
+// Test message is used for development and testing purposes. Sending a Test
+// message with a string to the server will cause the server to return a Test
+// message. If the string is "Error", the server will return an error message
+// instead.
+type Test struct {
+	// Message ID.
+	ID uint32 `json:"Id"`
+	// String to echo back from server.
+	TestString string
 }
 
 // RequestLog requests that the server send internal log messages.

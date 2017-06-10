@@ -55,6 +55,25 @@ var IncomingJSONCases = []MarshalJSONIncoming{
 		},
 	},
 	{
+		Name: "Test",
+		JSON: `[
+  {
+    "Test": {
+      "Id": 5,
+      "TestString": "Moo"
+    }
+  }
+]`,
+		Msgs: IncomingMessages{
+			{
+				Test: &Test{
+					ID:         5,
+					TestString: "Moo",
+				},
+			},
+		},
+	},
+	{
 		Name: "Log",
 		JSON: `[
   {
@@ -234,6 +253,25 @@ var OutgoingJSONCases = []MarshalJSONOutgoing{
 			{
 				Ping: &Empty{
 					ID: 5,
+				},
+			},
+		},
+	},
+	{
+		Name: "Test",
+		JSON: `[
+  {
+    "Test": {
+      "Id": 5,
+      "TestString": "Moo"
+    }
+  }
+]`,
+		Msgs: OutgoingMessages{
+			{
+				Test: &Test{
+					ID:         5,
+					TestString: "Moo",
 				},
 			},
 		},
@@ -557,6 +595,10 @@ func (p *IncomingMessage) Equals(v *IncomingMessage) bool {
 		return false
 	case p.Error != nil && *p.Error != *v.Error:
 		return false
+	case p.Test == nil && v.Test != nil:
+		return false
+	case p.Test != nil && *p.Test != *v.Test:
+		return false
 	case p.Log == nil && v.Log != nil:
 		return false
 	case p.Log != nil && *p.Log != *v.Log:
@@ -596,6 +638,10 @@ func (p *OutgoingMessage) Equals(v *OutgoingMessage) bool {
 	case p.Ping == nil && v.Ping != nil:
 		return false
 	case p.Ping != nil && *p.Ping != *v.Ping:
+		return false
+	case p.Test == nil && v.Test != nil:
+		return false
+	case p.Test != nil && *p.Test != *v.Test:
 		return false
 	case p.RequestLog == nil && v.RequestLog != nil:
 		return false
