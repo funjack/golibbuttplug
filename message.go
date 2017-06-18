@@ -38,6 +38,30 @@ type IncomingMessage struct {
 	DeviceRemoved *Device     `json:"DeviceRemoved,omitempty"`
 }
 
+func (m IncomingMessage) Message() (id uint32, v interface{}) {
+	switch true {
+	case m.Ok != nil:
+		return m.Ok.ID, *m.Ok
+	case m.Error != nil:
+		return m.Error.ID, *m.Error
+	case m.Test != nil:
+		return m.Test.ID, *m.Test
+	case m.Log != nil:
+		return m.Log.ID, *m.Log
+	case m.ServerInfo != nil:
+		return m.ServerInfo.ID, *m.ServerInfo
+	case m.ScanningFinished != nil:
+		return m.ScanningFinished.ID, *m.ScanningFinished
+	case m.DeviceList != nil:
+		return m.DeviceList.ID, *m.DeviceList
+	case m.DeviceAdded != nil:
+		return m.DeviceAdded.ID, *m.DeviceAdded
+	case m.DeviceRemoved != nil:
+		return m.DeviceRemoved.ID, *m.DeviceRemoved
+	}
+	return 0, nil
+}
+
 // OutgoingMessage contains all messages a Buttplug server can receive.
 type OutgoingMessage struct {
 	Ping       *Empty      `json:"Ping,omitempty"`
