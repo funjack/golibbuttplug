@@ -1,4 +1,4 @@
-package golibplug
+package message
 
 import (
 	"encoding/json"

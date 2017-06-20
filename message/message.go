@@ -1,4 +1,4 @@
-package golibplug
+package message
 
 const (
 	// LogLevelOff ...
