@@ -20,7 +20,7 @@ type IDCounter struct {
 // Generate creates a new ID.
 func (c *IDCounter) Generate() uint32 {
 	c.Lock()
-	defer c.Lock()
+	defer c.Unlock()
 	c.value++
 	if c.value == 0 {
 		c.value = 1
@@ -37,9 +37,11 @@ type Sender struct {
 
 // NewSender creates a Sender for the given websocket.
 func NewSender(conn *websocket.Conn) (b *Sender) {
-	b.stop = make(chan bool)
 	out := make(chan OutgoingMessage, bufferSize)
-	b.out = out
+	b = &Sender{
+		stop: make(chan bool),
+		out:  out,
+	}
 	go writeLoop(conn, out)
 	return
 }
@@ -53,6 +55,13 @@ func writeLoop(conn *websocket.Conn, buf <-chan OutgoingMessage) {
 		} else if err != nil {
 			log.Printf("error during write: %v", err)
 		}
+	}
+	err := conn.WriteMessage(
+		websocket.CloseMessage,
+		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
+	)
+	if err != nil {
+		log.Println("error closing websocket:", err)
 	}
 }
 

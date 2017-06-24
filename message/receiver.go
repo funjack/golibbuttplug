@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -16,23 +17,25 @@ type Receiver struct {
 	hub  *hub
 }
 
-// NewReceiver creates a Receiver for the given websocket connection.
-func NewReceiver(conn *websocket.Conn) *Receiver {
+// NewReceiver creates a Receiver for the given websocket connection. Done
+// channel is closed then receiver is done.
+func NewReceiver(conn *websocket.Conn, done chan struct{}) *Receiver {
 	r := &Receiver{
 		conn: conn,
 		hub:  newHub(),
 	}
-	go r.run()
+	go r.run(done)
 	return r
 }
 
 // Run reads a message from the websocket connection and puts it on the hub.
-func (rc *Receiver) run() {
+func (rc *Receiver) run(done chan struct{}) {
 	for {
 		messageType, r, err := rc.conn.NextReader()
 		if err != nil {
 			rc.conn.Close()
-			break
+			close(done)
+			return
 		}
 		if messageType != websocket.TextMessage {
 			log.Println("incoming message is not a text message")
@@ -64,7 +67,10 @@ func (rc *Receiver) Subscribe() *Reader {
 // Unsubscribe removes the readers subscription and will no longer receive
 // messages.
 func (rc *Receiver) Unsubscribe(r *Reader) {
-	rc.hub.unsubscribe <- r
+	select {
+	case rc.hub.unsubscribe <- r:
+	case <-time.After(time.Second * 10):
+	}
 }
 
 // Stop the receiver from sending any messages.

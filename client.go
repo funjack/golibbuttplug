@@ -29,11 +29,11 @@ var defaultTimeout = time.Second * 30
 // server.
 type Client struct {
 	ctx     context.Context
-	conn    *websocket.Conn   // Websocket connection with Buttplug server.
-	counter message.IDCounter // Message ID counter
+	conn    *websocket.Conn    // Websocket connection with Buttplug server.
+	counter *message.IDCounter // Message ID counter
 
 	once     sync.Once         // Ensure Close() is executed only once.
-	stop     chan bool         // Halts pingLoop and eventLoop goroutines.
+	stop     chan struct{}     // Halts pingLoop and eventLoop goroutines.
 	sender   *message.Sender   // Sending messages.
 	receiver *message.Receiver // Receiving messages.
 
@@ -43,6 +43,12 @@ type Client struct {
 
 // NewClient returns a new client with a connection to a Buttplug server.
 func NewClient(ctx context.Context, addr, name string) (c *Client, err error) {
+	c = &Client{
+		ctx:     ctx,
+		counter: new(message.IDCounter),
+		stop:    make(chan struct{}),
+		devices: make(map[uint32]message.Device),
+	}
 	// Create websocket connection
 	u, err := url.ParseRequestURI(addr)
 	if err != nil {
@@ -53,11 +59,13 @@ func NewClient(ctx context.Context, addr, name string) (c *Client, err error) {
 		return nil, err
 	}
 	// Start the reader and writer.
-	c.receiver = message.NewReceiver(c.conn)
+	c.receiver = message.NewReceiver(c.conn, c.stop)
 	c.sender = message.NewSender(c.conn)
-	c.stop = make(chan bool)
 	go func() {
-		<-ctx.Done()
+		select {
+		case <-ctx.Done():
+		case <-c.stop:
+		}
 		c.Close()
 	}()
 	// Initialize a session with the server.
@@ -81,11 +89,15 @@ func NewClient(ctx context.Context, addr, name string) (c *Client, err error) {
 // Close the connection.
 func (c *Client) Close() {
 	c.once.Do(func() {
-		close(c.stop)
+		log.Printf("Closing connection to Buttplug")
 		c.sender.Stop()
 		c.receiver.Stop()
+		select {
+		case <-c.stop:
+		case <-time.After(time.Second):
+		}
 		c.conn.Close()
-		log.Printf("Connection to Buttplug stopped")
+		log.Printf("Connection to Buttplug closed")
 	})
 }
 
@@ -194,7 +206,7 @@ func (c *Client) eventLoop(in *message.Reader) {
 func (c *Client) addDevice(d message.Device) {
 	c.m.Lock()
 	defer c.m.Unlock()
-	log.Printf("adding deviceindex %d (%s)", d.DeviceIndex, d.DeviceName)
+	log.Printf("Found device: %s (%d)", d.DeviceName, d.DeviceIndex)
 	c.devices[d.DeviceIndex] = d
 }
 
@@ -202,7 +214,8 @@ func (c *Client) addDevice(d message.Device) {
 func (c *Client) removeDevice(d message.Device) {
 	c.m.Lock()
 	defer c.m.Unlock()
-	log.Printf("removing deviceindex %d (%s)", d.DeviceIndex, d.DeviceName)
+	log.Printf("Removed device: %s (%d)",
+		c.devices[d.DeviceIndex].DeviceName, d.DeviceIndex)
 	delete(c.devices, d.DeviceIndex)
 }
 
