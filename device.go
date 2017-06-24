@@ -1,4 +1,4 @@
-package client
+package golibbuttplug
 
 import (
 	"errors"
@@ -22,7 +22,8 @@ var (
 	ErrInvalidCmd = errors.New("invalid command")
 )
 
-// Device ...
+// Device structs represents a connected device and can be used to execute
+// commands.
 type Device struct {
 	client *Client
 	device message.Device

@@ -26,7 +26,7 @@ func NewReceiver(conn *websocket.Conn) *Receiver {
 	return r
 }
 
-// run reads a message from the websocket connection and puts it on the hub.
+// Run reads a message from the websocket connection and puts it on the hub.
 func (rc *Receiver) run() {
 	for {
 		messageType, r, err := rc.conn.NextReader()

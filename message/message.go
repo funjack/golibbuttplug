@@ -1,3 +1,6 @@
+/*
+Package message contains types and handlers for Buttplug messages.
+*/
 package message
 
 const (
@@ -38,6 +41,7 @@ type IncomingMessage struct {
 	DeviceRemoved *Device     `json:"DeviceRemoved,omitempty"`
 }
 
+// Message returns the id and message.
 func (m IncomingMessage) Message() (id uint32, v interface{}) {
 	switch true {
 	case m.Ok != nil:

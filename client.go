@@ -1,4 +1,11 @@
-package client
+/*
+Package golibbuttplug provides a Buttplug websocket client.
+
+Buttplug (https://buttplug.io/) is a quasi-standard set of technologies and
+protocols to allow developers to write software that controls an array of sex
+toys in a semi-future-proof way.
+*/
+package golibbuttplug
 
 import (
 	"context"
@@ -14,11 +21,12 @@ import (
 )
 
 // DefaultName is used when no name is specified when creating a new client.
-const DefaultName = "golibplug"
+const DefaultName = "golibbuttplug"
 
 var defaultTimeout = time.Second * 30
 
-// Client ...
+// Client is a websocket API client that performs operations against a Buttplug
+// server.
 type Client struct {
 	ctx     context.Context
 	conn    *websocket.Conn   // Websocket connection with Buttplug server.
@@ -70,7 +78,7 @@ func NewClient(ctx context.Context, addr, name string) (c *Client, err error) {
 	return c, nil
 }
 
-// Close closes connection.
+// Close the connection.
 func (c *Client) Close() {
 	c.once.Do(func() {
 		close(c.stop)
@@ -81,7 +89,8 @@ func (c *Client) Close() {
 	})
 }
 
-// InitSession creates a session with server.
+// InitSession creates a session with server by requesting serverinfo and
+// starting a ping/pong exchange.
 func (c *Client) initSession(name string) error {
 	// Send RequestServerInfo
 	id := c.counter.Generate()
@@ -139,7 +148,7 @@ func (c *Client) pingLoop(d time.Duration) {
 	}
 }
 
-// InitDeviceList syncs up local device list.
+// InitDeviceList syncs up client device list with server.
 func (c *Client) initDeviceList() error {
 	// Send RequestDeviceList
 	id := c.counter.Generate()
@@ -197,6 +206,7 @@ func (c *Client) removeDevice(d message.Device) {
 	delete(c.devices, d.DeviceIndex)
 }
 
+// ReceiveMessage waits for and reads a message with a given id.
 func (c *Client) receiveMessage(ctx context.Context, id uint32) (message.IncomingMessage, error) {
 	r := c.receiver.Subscribe()
 	defer c.receiver.Unsubscribe(r)
@@ -215,7 +225,8 @@ func (c *Client) receiveMessage(ctx context.Context, id uint32) (message.Incomin
 	}
 }
 
-// SendMessage is a generic send and read Ok/Error message.
+// SendMessage is a generic send and read Ok/Error message with the default
+// timeout.
 func (c *Client) sendMessage(id uint32, m message.OutgoingMessage) error {
 	if err := c.sender.Send(m); err != nil {
 		return err
