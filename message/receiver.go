@@ -47,7 +47,10 @@ func (rc *Receiver) run(done chan struct{}) {
 			continue
 		}
 		for _, msg := range msgs {
-			rc.hub.incoming <- msg
+			select {
+			case rc.hub.incoming <- msg:
+			case <-rc.hub.stop:
+			}
 		}
 	}
 

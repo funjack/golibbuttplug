@@ -30,8 +30,8 @@ func (c *IDCounter) Generate() uint32 {
 
 // Sender buffers and sends Buttplug messages over a websocket connection.
 type Sender struct {
-	out  chan<- OutgoingMessage // buffered channelfor outgoing messages.
-	once sync.Once              // Make sure Stop() is execute only once.
+	out  chan OutgoingMessage // buffered channelfor outgoing messages.
+	once sync.Once            // Make sure Stop() is execute only once.
 	stop chan bool
 }
 
@@ -42,18 +42,24 @@ func NewSender(conn *websocket.Conn) (b *Sender) {
 		stop: make(chan bool),
 		out:  out,
 	}
-	go writeLoop(conn, out)
+	go b.writeLoop(conn)
 	return
 }
 
 // writeLoop reads messages from buffer and sends them over the websocket.
-func writeLoop(conn *websocket.Conn, buf <-chan OutgoingMessage) {
-	for v := range buf {
-		err := conn.WriteJSON(OutgoingMessages{v})
-		if err == websocket.ErrCloseSent {
-			return
-		} else if err != nil {
-			log.Printf("error during write: %v", err)
+func (b *Sender) writeLoop(conn *websocket.Conn) {
+Stop:
+	for {
+		select {
+		case <-b.stop:
+			break Stop
+		case v := <-b.out:
+			err := conn.WriteJSON(OutgoingMessages{v})
+			if err == websocket.ErrCloseSent {
+				return
+			} else if err != nil {
+				log.Printf("error during write: %v", err)
+			}
 		}
 	}
 	err := conn.WriteMessage(
@@ -81,6 +87,5 @@ func (b *Sender) Send(m OutgoingMessage) error {
 func (b *Sender) Stop() {
 	b.once.Do(func() {
 		close(b.stop)
-		close(b.out)
 	})
 }
