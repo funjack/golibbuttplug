@@ -7,6 +7,15 @@ import (
 	"github.com/funjack/golibbuttplug/message"
 )
 
+const (
+	CommandStopDevice           = "StopDeviceCmd"
+	CommandRaw                  = "RawCmd"
+	CommandSingleMotorVibrate   = "SingleMotorVibrateCmd"
+	CommandKiirooCmd            = "KiirooCmd"
+	CommandFleshlightLaunchFW12 = "FleshlightLaunchFW12Cmd"
+	CommandLovense              = "LovenseCmd"
+)
+
 var (
 	// ErrUnsupported is the error returned when the command executed is
 	// not supported by the device.
@@ -55,7 +64,7 @@ func (d *Device) Supported() []string {
 
 // StopDeviceCmd stops a device from whatever actions it may be taking.
 func (d *Device) StopDeviceCmd() error {
-	if !d.IsSupported("StopDeviceCmd") {
+	if !d.IsSupported(CommandStopDevice) {
 		return ErrUnsupported
 	}
 	id := d.client.counter.Generate()
@@ -69,7 +78,7 @@ func (d *Device) StopDeviceCmd() error {
 
 // RawCmd sends a raw byte string to a device.
 func (d *Device) RawCmd(cmd []byte) error {
-	if !d.IsSupported("RawCmd") {
+	if !d.IsSupported(CommandRaw) {
 		return ErrUnsupported
 	}
 	id := d.client.counter.Generate()
@@ -85,7 +94,7 @@ func (d *Device) RawCmd(cmd []byte) error {
 // certain speed. In order to abstract the dynamic range of different toys, the
 // value sent is a float with a range of [0.0-1.0].
 func (d *Device) SingleMotorVibrateCmd(spd float64) error {
-	if !d.IsSupported("SingleMotorVibrateCmd") {
+	if !d.IsSupported(CommandSingleMotorVibrate) {
 		return ErrUnsupported
 	}
 	if spd < 0 || spd > 1 {
@@ -103,7 +112,7 @@ func (d *Device) SingleMotorVibrateCmd(spd float64) error {
 // KiirooCmd causes a toy that supports Kiiroo style commands to run whatever
 // event may be related.
 func (d *Device) KiirooCmd(cmd int) error {
-	if !d.IsSupported("KiirooCmd") {
+	if !d.IsSupported(CommandKiirooCmd) {
 		return ErrUnsupported
 	}
 	if cmd < 0 || cmd > 4 {
@@ -121,7 +130,7 @@ func (d *Device) KiirooCmd(cmd int) error {
 // FleshlightLaunchFW12Cmd causes a toy that supports Fleshlight Launch
 // (Firmware Version 1.2) style commands to run whatever event may be related.
 func (d *Device) FleshlightLaunchFW12Cmd(pos, spd int) error {
-	if !d.IsSupported("FleshlightLaunchFW12Cmd") {
+	if !d.IsSupported(CommandFleshlightLaunchFW12) {
 		return ErrUnsupported
 	}
 	if pos < 0 || pos > 99 {
@@ -143,7 +152,7 @@ func (d *Device) FleshlightLaunchFW12Cmd(pos, spd int) error {
 // LovenseCmd causes a toy that supports Lovense style commands to run whatever
 // event may be related.
 func (d *Device) LovenseCmd(cmd string) error {
-	if !d.IsSupported("LovenseCmd") {
+	if !d.IsSupported(CommandLovense) {
 		return ErrUnsupported
 	}
 	id := d.client.counter.Generate()
