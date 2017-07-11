@@ -92,10 +92,7 @@ func (c *Client) Close() {
 		log.Printf("Closing connection to Buttplug")
 		c.sender.Stop()
 		c.receiver.Stop()
-		select {
-		case <-c.stop:
-		case <-time.After(time.Second):
-		}
+		<-c.stop
 		c.conn.Close()
 		log.Printf("Connection to Buttplug closed")
 	})
