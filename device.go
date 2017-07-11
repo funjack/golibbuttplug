@@ -8,12 +8,18 @@ import (
 )
 
 const (
-	CommandStopDevice           = "StopDeviceCmd"
-	CommandRaw                  = "RawCmd"
-	CommandSingleMotorVibrate   = "SingleMotorVibrateCmd"
-	CommandKiirooCmd            = "KiirooCmd"
+	// CommandStopDevice ...
+	CommandStopDevice = "StopDeviceCmd"
+	// CommandRaw ...
+	CommandRaw = "RawCmd"
+	// CommandSingleMotorVibrate ...
+	CommandSingleMotorVibrate = "SingleMotorVibrateCmd"
+	// CommandKiiroo ...
+	CommandKiiroo = "KiirooCmd"
+	// CommandFleshlightLaunchFW12 ...
 	CommandFleshlightLaunchFW12 = "FleshlightLaunchFW12Cmd"
-	CommandLovense              = "LovenseCmd"
+	// CommandLovense ...
+	CommandLovense = "LovenseCmd"
 )
 
 var (
@@ -36,6 +42,7 @@ var (
 type Device struct {
 	client *Client
 	device message.Device
+	done   chan struct{}
 }
 
 func (d *Device) String() string {
@@ -112,7 +119,7 @@ func (d *Device) SingleMotorVibrateCmd(spd float64) error {
 // KiirooCmd causes a toy that supports Kiiroo style commands to run whatever
 // event may be related.
 func (d *Device) KiirooCmd(cmd int) error {
-	if !d.IsSupported(CommandKiirooCmd) {
+	if !d.IsSupported(CommandKiiroo) {
 		return ErrUnsupported
 	}
 	if cmd < 0 || cmd > 4 {
@@ -162,4 +169,10 @@ func (d *Device) LovenseCmd(cmd string) error {
 			Command: cmd,
 		},
 	})
+}
+
+// Disconnected returns a receiving channel, that is closed when the device is
+// removed.
+func (d *Device) Disconnected() <-chan struct{} {
+	return d.done
 }

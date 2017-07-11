@@ -37,8 +37,8 @@ type Client struct {
 	sender   *message.Sender   // Sending messages.
 	receiver *message.Receiver // Receiving messages.
 
-	m       sync.RWMutex              // Protects devices map.
-	devices map[uint32]message.Device // Devices by their DeviceIndex
+	m       sync.RWMutex       // Protects devices map.
+	devices map[uint32]*Device // Devices by their DeviceIndex
 }
 
 // NewClient returns a new client with a connection to a Buttplug server.
@@ -47,7 +47,7 @@ func NewClient(ctx context.Context, addr, name string) (c *Client, err error) {
 		ctx:     ctx,
 		counter: new(message.IDCounter),
 		stop:    make(chan struct{}),
-		devices: make(map[uint32]message.Device),
+		devices: make(map[uint32]*Device),
 	}
 	// Create websocket connection
 	u, err := url.ParseRequestURI(addr)
@@ -204,7 +204,11 @@ func (c *Client) addDevice(d message.Device) {
 	c.m.Lock()
 	defer c.m.Unlock()
 	log.Printf("Found device: %s (%d)", d.DeviceName, d.DeviceIndex)
-	c.devices[d.DeviceIndex] = d
+	c.devices[d.DeviceIndex] = &Device{
+		client: c,
+		device: d,
+		done:   make(chan struct{}),
+	}
 }
 
 // RemoveDevice from the device list.
@@ -212,7 +216,10 @@ func (c *Client) removeDevice(d message.Device) {
 	c.m.Lock()
 	defer c.m.Unlock()
 	log.Printf("Removed device: %s (%d)",
-		c.devices[d.DeviceIndex].DeviceName, d.DeviceIndex)
+		c.devices[d.DeviceIndex].device.DeviceName, d.DeviceIndex)
+	if dev, ok := c.devices[d.DeviceIndex]; ok {
+		close(dev.done)
+	}
 	delete(c.devices, d.DeviceIndex)
 }
 
@@ -309,11 +316,7 @@ func (c *Client) Devices() []*Device {
 	defer c.m.RUnlock()
 	d := make([]*Device, 0, len(c.devices))
 	for _, v := range c.devices {
-		dev := &Device{
-			client: c,
-			device: v,
-		}
-		d = append(d, dev)
+		d = append(d, v)
 	}
 	return d
 }
