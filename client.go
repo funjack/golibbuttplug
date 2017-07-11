@@ -94,6 +94,7 @@ func (c *Client) Close() {
 		c.receiver.Stop()
 		<-c.stop
 		c.conn.Close()
+		c.removeAllDevices()
 		log.Printf("Connection to Buttplug closed")
 	})
 }
@@ -223,6 +224,21 @@ func (c *Client) removeDevice(d message.Device) {
 	delete(c.devices, d.DeviceIndex)
 }
 
+// RemoveAllDevices removes all discovered devices.
+func (c *Client) removeAllDevices() {
+	// Get all devices.Messages
+	c.m.Lock()
+	dmsgs := make([]message.Device, 0, len(c.devices))
+	for _, v := range c.devices {
+		dmsgs = append(dmsgs, v.device)
+	}
+	c.m.Unlock()
+	// Remove devices
+	for _, m := range dmsgs {
+		c.removeDevice(m)
+	}
+}
+
 // ReceiveMessage waits for and reads a message with a given id.
 func (c *Client) receiveMessage(ctx context.Context, id uint32) (message.IncomingMessage, error) {
 	r := c.receiver.Subscribe()
@@ -331,4 +347,10 @@ func (c *Client) StopAllDevices() error {
 		},
 	}
 	return c.sendMessage(id, m)
+}
+
+// Disconnected returns a receiver channel that is closed when the client has
+// stopped.
+func (c *Client) Disconnected() <-chan struct{} {
+	return c.stop
 }
