@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"sync"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -69,14 +68,14 @@ func (rc *Receiver) Subscribe() *Reader {
 func (rc *Receiver) Unsubscribe(r *Reader) {
 	select {
 	case rc.hub.unsubscribe <- r:
-	case <-time.After(time.Second * 10):
+	case <-rc.hub.stop:
 	}
 }
 
 // Stop the receiver from sending any messages.
 func (rc *Receiver) Stop() {
 	rc.once.Do(func() {
-		rc.hub.stop <- true
+		close(rc.hub.stop)
 	})
 }
 
