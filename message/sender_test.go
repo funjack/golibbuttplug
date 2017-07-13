@@ -1,7 +1,6 @@
 package message
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -30,11 +29,8 @@ func TestSend(t *testing.T) {
 	testSend(t, 1)
 }
 
-func BenchmarkSend(b *testing.B) {
-	testSend(b, b.N)
-}
-
 func testSend(tb testing.TB, n int) {
+	start := make(chan struct{})
 	done := make(chan struct{})
 	var upgrader = websocket.Upgrader{}
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +42,7 @@ func testSend(tb testing.TB, n int) {
 		go readLoop(ws)
 		sender := NewSender(ws)
 
+		<-start
 		for i := 0; i < n; i++ {
 			sender.Send(OutgoingMessage{
 				Ping: &Empty{ID: uint32(i)},
@@ -53,7 +50,7 @@ func testSend(tb testing.TB, n int) {
 		}
 		select {
 		case <-done:
-		case <-time.After(100 * time.Second):
+		case <-time.After(10 * time.Second):
 			tb.Errorf("test timeout")
 		}
 		sender.Stop()
@@ -70,18 +67,17 @@ func testSend(tb testing.TB, n int) {
 		tb.Error(err)
 	}
 	defer conn.Close()
+	close(start)
 	for {
-		messageType, r, err := conn.NextReader()
+		var msgs []OutgoingMessage
+		err := conn.ReadJSON(&msgs)
 		if err != nil {
 			tb.Error(err)
+			continue
 		}
-		if messageType != websocket.TextMessage {
-			tb.Errorf("incoming message is not a text message")
-		}
-		var msgs []OutgoingMessage
-		e := json.NewDecoder(r)
-		if err := e.Decode(&msgs); err != nil {
-			tb.Errorf("error unmarshaling message: %v", err)
+		if len(msgs) < 1 {
+			tb.Errorf("empty message list received")
+
 		}
 		if msgs[0].Ping == nil {
 			tb.Errorf("ping message not received")
