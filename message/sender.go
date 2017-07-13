@@ -74,8 +74,6 @@ Stop:
 // Send a message to the server.
 func (b *Sender) Send(m OutgoingMessage) error {
 	select {
-	case <-b.stop:
-		return errors.New("stopped")
 	case b.out <- m:
 		return nil
 	default:
