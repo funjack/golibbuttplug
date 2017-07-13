@@ -183,7 +183,10 @@ func (c *Client) initDeviceList() error {
 		c.addDevice(d)
 	}
 	// Start event watcher goroutine.
-	s := c.receiver.Subscribe()
+	s, err := c.receiver.Subscribe()
+	if err != nil {
+		return err
+	}
 	go c.eventLoop(s)
 	return nil
 }
@@ -241,7 +244,10 @@ func (c *Client) removeAllDevices() {
 
 // ReceiveMessage waits for and reads a message with a given id.
 func (c *Client) receiveMessage(ctx context.Context, id uint32) (message.IncomingMessage, error) {
-	r := c.receiver.Subscribe()
+	r, err := c.receiver.Subscribe()
+	if err != nil {
+		return message.IncomingMessage{}, err
+	}
 	defer c.receiver.Unsubscribe(r)
 	for {
 		select {
@@ -309,7 +315,10 @@ func (c *Client) StopScanning() error {
 
 // WaitOnScanning waits until the server has stopped scanning on all busses.
 func (c *Client) WaitOnScanning(ctx context.Context) error {
-	r := c.receiver.Subscribe()
+	r, err := c.receiver.Subscribe()
+	if err != nil {
+		return err
+	}
 	defer c.receiver.Unsubscribe(r)
 	for {
 		select {

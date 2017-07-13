@@ -1,8 +1,7 @@
 package message
 
 import (
-	"encoding/json"
-	"log"
+	"errors"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -30,21 +29,12 @@ func NewReceiver(conn *websocket.Conn, done chan struct{}) *Receiver {
 // Run reads a message from the websocket connection and puts it on the hub.
 func (rc *Receiver) run(done chan struct{}) {
 	for {
-		messageType, r, err := rc.conn.NextReader()
+		var msgs IncomingMessages
+		err := rc.conn.ReadJSON(&msgs)
 		if err != nil {
 			rc.conn.Close()
 			close(done)
 			return
-		}
-		if messageType != websocket.TextMessage {
-			log.Println("incoming message is not a text message")
-			continue
-		}
-		var msgs IncomingMessages
-		e := json.NewDecoder(r)
-		if err := e.Decode(&msgs); err != nil {
-			log.Printf("error unmarshaling message: %v", err)
-			continue
 		}
 		for _, msg := range msgs {
 			select {
@@ -58,12 +48,16 @@ func (rc *Receiver) run(done chan struct{}) {
 
 // Subscribe creates a new reader that receives messages. A consumer should
 // call the Unsubscribe when it's done with the reader.
-func (rc *Receiver) Subscribe() *Reader {
+func (rc *Receiver) Subscribe() (*Reader, error) {
 	r := &Reader{
 		buf: make(chan IncomingMessage, 10),
 	}
-	rc.hub.subscribe <- r
-	return r
+	select {
+	case rc.hub.subscribe <- r:
+		return r, nil
+	case <-rc.hub.stop:
+		return nil, errors.New("stopped")
+	}
 }
 
 // Unsubscribe removes the readers subscription and will no longer receive
