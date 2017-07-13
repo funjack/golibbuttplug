@@ -1,0 +1,9 @@
+language: go
+os:
+- linux
+go:
+- 1.8
+script:
+- "./tools/gotest.sh"
+after_success:
+- bash <(curl -s https://codecov.io/bash)
