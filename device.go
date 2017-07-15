@@ -91,8 +91,9 @@ func (d *Device) RawCmd(cmd []byte) error {
 	id := d.client.counter.Generate()
 	return d.client.sendMessage(id, message.OutgoingMessage{
 		RawCmd: &message.RawCmd{
-			ID:      id,
-			Command: cmd,
+			ID:          id,
+			DeviceIndex: d.device.DeviceIndex,
+			Command:     cmd,
 		},
 	})
 }
@@ -110,8 +111,9 @@ func (d *Device) SingleMotorVibrateCmd(spd float64) error {
 	id := d.client.counter.Generate()
 	return d.client.sendMessage(id, message.OutgoingMessage{
 		SingleMotorVibrateCmd: &message.SingleMotorVibrateCmd{
-			ID:    id,
-			Speed: spd,
+			ID:          id,
+			DeviceIndex: d.device.DeviceIndex,
+			Speed:       spd,
 		},
 	})
 }
@@ -128,8 +130,9 @@ func (d *Device) KiirooCmd(cmd int) error {
 	id := d.client.counter.Generate()
 	return d.client.sendMessage(id, message.OutgoingMessage{
 		KiirooCmd: &message.KiirooCmd{
-			ID:      id,
-			Command: cmd,
+			ID:          id,
+			DeviceIndex: d.device.DeviceIndex,
+			Command:     cmd,
 		},
 	})
 }
@@ -149,9 +152,10 @@ func (d *Device) FleshlightLaunchFW12Cmd(pos, spd int) error {
 	id := d.client.counter.Generate()
 	return d.client.sendMessage(id, message.OutgoingMessage{
 		FleshlightLaunchFW12Cmd: &message.FleshlightLaunchFW12Cmd{
-			ID:       id,
-			Position: pos,
-			Speed:    spd,
+			ID:          id,
+			DeviceIndex: d.device.DeviceIndex,
+			Position:    pos,
+			Speed:       spd,
 		},
 	})
 }
@@ -165,8 +169,9 @@ func (d *Device) LovenseCmd(cmd string) error {
 	id := d.client.counter.Generate()
 	return d.client.sendMessage(id, message.OutgoingMessage{
 		LovenseCmd: &message.LovenseCmd{
-			ID:      id,
-			Command: cmd,
+			ID:          id,
+			DeviceIndex: d.device.DeviceIndex,
+			Command:     cmd,
 		},
 	})
 }
