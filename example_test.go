@@ -12,7 +12,7 @@ func ExampleClient() {
 	// Contexts can be used to cancel client connection.
 	rootctx := context.Background()
 	// Create a new session with the server as "ExampleClient".
-	c, err := NewClient(rootctx, "ws://127.0.0.1:12345", "ExampleClient")
+	c, err := NewClient(rootctx, "ws://127.0.0.1:12345", "ExampleClient", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

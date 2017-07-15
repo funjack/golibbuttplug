@@ -9,6 +9,7 @@ package golibbuttplug
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"log"
@@ -42,7 +43,7 @@ type Client struct {
 }
 
 // NewClient returns a new client with a connection to a Buttplug server.
-func NewClient(ctx context.Context, addr, name string) (c *Client, err error) {
+func NewClient(ctx context.Context, addr, name string, tlscfg *tls.Config) (c *Client, err error) {
 	c = &Client{
 		ctx:     ctx,
 		counter: new(message.IDCounter),
@@ -54,7 +55,10 @@ func NewClient(ctx context.Context, addr, name string) (c *Client, err error) {
 	if err != nil {
 		return nil, err
 	}
-	c.conn, _, err = websocket.DefaultDialer.Dial(u.String(), nil)
+	dailer := &websocket.Dialer{
+		TLSClientConfig: tlscfg,
+	}
+	c.conn, _, err = dailer.Dial(u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
