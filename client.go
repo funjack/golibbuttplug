@@ -131,7 +131,7 @@ func (c *Client) initSession(name string) error {
 	log.Printf("Connected to Buttplug %s (%d.%d.%d)", si.ServerName,
 		si.BuildVersion, si.MajorVersion, si.MinorVersion)
 	// Start ping goroutine
-	interval := time.Duration(1) * time.Second
+	interval := 500 * time.Millisecond
 	if si.MaxPingTime != 0 && si.MaxPingTime < 1000 {
 		interval = time.Duration(si.MaxPingTime/2) * time.Millisecond
 	}
@@ -141,6 +141,7 @@ func (c *Client) initSession(name string) error {
 
 // PingLoop sends out pings.
 func (c *Client) pingLoop(d time.Duration) {
+	c.ping()
 	for {
 		select {
 		case <-c.ctx.Done():
@@ -148,17 +149,22 @@ func (c *Client) pingLoop(d time.Duration) {
 		case <-c.stop:
 			return
 		case <-time.After(d):
-			id := c.counter.Generate()
-			m := message.OutgoingMessage{
-				Ping: &message.Empty{
-					ID: id,
-				},
-			}
-			if err := c.sendMessage(id, m); err != nil {
-				log.Printf("ping error: %v", err)
-				c.Close()
-			}
+			c.ping()
 		}
+	}
+}
+
+// Ping to server and close when an error comes back.
+func (c *Client) ping() {
+	id := c.counter.Generate()
+	m := message.OutgoingMessage{
+		Ping: &message.Empty{
+			ID: id,
+		},
+	}
+	if err := c.sendMessage(id, m); err != nil {
+		log.Printf("ping error: %v", err)
+		c.Close()
 	}
 }
 
