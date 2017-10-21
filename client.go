@@ -180,7 +180,7 @@ func (c *Client) initDeviceList() error {
 	if err := c.sender.Send(r); err != nil {
 		return err
 	}
-	// Retreive response
+	// Recreive response
 	ctx, cancel := context.WithTimeout(c.ctx, defaultTimeout)
 	defer cancel()
 	m, err := c.receiveMessage(ctx, id)

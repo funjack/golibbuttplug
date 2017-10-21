@@ -86,6 +86,7 @@ type OutgoingMessage struct {
 	KiirooCmd               *KiirooCmd               `json:"KiirooCmd,omitempty"`
 	FleshlightLaunchFW12Cmd *FleshlightLaunchFW12Cmd `json:"FleshlightLaunchFW12Cmd,omitempty"`
 	LovenseCmd              *LovenseCmd              `json:"LovenseCmd,omitempty"`
+	VorzeA10CycloneCmd      *VorzeA10CycloneCmd      `json:"VorzeA10CycloneCmd,omitempty"`
 }
 
 // Empty message is used for all request and responses without additional
@@ -237,4 +238,18 @@ type LovenseCmd struct {
 	// on most of their toys. Implementations should check this for
 	// validity.
 	Command string
+}
+
+// VorzeA10CycloneCmd causes a toy that supports VorzeA10Cyclone style commands
+// to run whatever event may be related.
+type VorzeA10CycloneCmd struct {
+	// Message ID.
+	ID uint32 `json:"Id"`
+	// Index used to identify the device.
+	DeviceIndex uint32
+	// Rotation speed command for the Cyclone.
+	Speed int
+	// True for clockwise rotation (in relation to device facing user),
+	// false for Counter-clockwise
+	Clockwise bool
 }

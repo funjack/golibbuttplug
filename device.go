@@ -20,6 +20,8 @@ const (
 	CommandFleshlightLaunchFW12 = "FleshlightLaunchFW12Cmd"
 	// CommandLovense ...
 	CommandLovense = "LovenseCmd"
+	// CommandVorzeA10Cyclone ...
+	CommandVorzeA10Cyclone = "VorzeA10CycloneCmd"
 )
 
 var (
@@ -172,6 +174,26 @@ func (d *Device) LovenseCmd(cmd string) error {
 			ID:          id,
 			DeviceIndex: d.device.DeviceIndex,
 			Command:     cmd,
+		},
+	})
+}
+
+// VorzeA10CycloneCmd causes a toy that supports VorzeA10Cyclone style commands
+// to run whatever event may be related.
+func (d *Device) VorzeA10CycloneCmd(spd int, clockwise bool) error {
+	if !d.IsSupported(CommandVorzeA10Cyclone) {
+		return ErrUnsupported
+	}
+	if spd < 0 || spd > 100 {
+		return ErrInvalidSpeed
+	}
+	id := d.client.counter.Generate()
+	return d.client.sendMessage(id, message.OutgoingMessage{
+		VorzeA10CycloneCmd: &message.VorzeA10CycloneCmd{
+			ID:          id,
+			DeviceIndex: d.device.DeviceIndex,
+			Speed:       spd,
+			Clockwise:   clockwise,
 		},
 	})
 }
