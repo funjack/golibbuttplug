@@ -487,6 +487,29 @@ var OutgoingJSONCases = []MarshalJSONOutgoing{
 			},
 		},
 	},
+	{
+		Name: "VorzeA10CycloneCmd",
+		JSON: `[
+  {
+    "VorzeA10CycloneCmd": {
+      "Id": 1,
+      "DeviceIndex": 0,
+      "Speed": 50,
+      "Clockwise": true
+    }
+  }
+]`,
+		Msgs: OutgoingMessages{
+			{
+				VorzeA10CycloneCmd: &VorzeA10CycloneCmd{
+					ID:          1,
+					DeviceIndex: 0,
+					Speed:       50,
+					Clockwise:   true,
+				},
+			},
+		},
+	},
 }
 
 func TestMarshallingJSONIncoming(t *testing.T) {
@@ -690,6 +713,10 @@ func (p *OutgoingMessage) Equals(v *OutgoingMessage) bool {
 	case p.LovenseCmd == nil && v.LovenseCmd != nil:
 		return false
 	case p.LovenseCmd != nil && *p.LovenseCmd != *v.LovenseCmd:
+		return false
+	case p.VorzeA10CycloneCmd == nil && v.VorzeA10CycloneCmd != nil:
+		return false
+	case p.VorzeA10CycloneCmd != nil && *p.VorzeA10CycloneCmd != *v.VorzeA10CycloneCmd:
 		return false
 	}
 	return true
