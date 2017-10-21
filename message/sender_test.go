@@ -57,7 +57,7 @@ func testSend(tb testing.TB, n int) {
 		select {
 		case <-sender.stop:
 		case <-time.After(10 * time.Second):
-			tb.Errorf("sender was not stopped withing timeout")
+			tb.Errorf("sender was not stopped within timeout")
 		}
 	}))
 	defer s.Close()
